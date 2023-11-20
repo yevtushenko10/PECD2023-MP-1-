@@ -8,10 +8,6 @@ from PIL import Image
 import numpy as np
 import json 
 
-picam2 = Picamera2()
-picam2.configure(picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (640, 480)}))
-picam2.start()
-
 output_directory = "detected_faces"
 os.makedirs(output_directory, exist_ok=True) 
 
@@ -19,6 +15,7 @@ os.makedirs(output_directory, exist_ok=True)
 BUZZER_PIN = 7  # Buzzer pin number
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(BUZZER_PIN, GPIO.OUT)
+GPIO.setwarnings(False)
 
 notes = {  # Dict that contains the first scale notes frequencies
     'C': 0.002109, 'D': 0.001879, 'E': 0.001674, 'F': 0.001580, 'G': 0.001408,
@@ -42,6 +39,10 @@ print("PIR-Sensor activated!")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/alex10/my_virtual_env/savvy-aileron-404621-c23d34c08331.json"
 client = vision.ImageAnnotatorClient()
 
+# Initialize picam2 outside the loop
+picam2 = Picamera2()
+picam2.configure(picam2.create_preview_configuration(main={"format": 'XRGB8888', "size": (640, 480)}))
+
 try:
     while True:
         if GPIO.input(PIR_PIN) == 0:  # No movement
@@ -49,6 +50,9 @@ try:
             time.sleep(0.5)
         elif GPIO.input(PIR_PIN) == 1:  # Movement detected
             print("Movements recognized!")
+            
+            # Start the camera
+            picam2.start()
 
             # Capture image with the camera
             im = picam2.capture_array()
@@ -68,6 +72,9 @@ try:
             image = vision.Image(content=image_bytes)
             response = client.face_detection(image=image)
             faces = response.face_annotations
+            
+            # Stop the camera after capturing the image
+            picam2.stop()
 
             if faces:  # Check if faces are detected
                 print("Face detected!")
