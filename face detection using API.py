@@ -36,7 +36,7 @@ GPIO.setup(PIR_PIN, GPIO.IN)
 print("PIR-Sensor activated!")
 
 # Set up Google Cloud Vision API client
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/alex10/my_virtual_env/savvy-aileron-404621-c23d34c08331.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "paste your API KEY json file here"
 client = vision.ImageAnnotatorClient()
 
 # Initialize picam2 outside the loop
